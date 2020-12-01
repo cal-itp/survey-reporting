@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  lab:
+    build: ./
+    image: survey_reporting
+    container_name: survey_reporting_lab
+    volumes:
+      - ./:/home/jovyan/
+    ports:
+      - "8888:8888"
+    environment:
+      - JUPYTER_RUNTIME_DIR=/tmp/runtime
+      - JUPYTER_ENABLE_LAB=1
+    command: "jupyter-lab --no-browser --ip=\"*\" --allow-root --port=8888 --NotebookApp.notebook_dir=/home/jovyan --LabApp.token=\"\" --LabApp.password=\"\""
+  rstudio:
+    build: ./
+    image: survey_reporting
+    container_name: survey_reporting_rstudio
+    volumes:
+      - ./:/home/jovyan
+    ports:
+      - "8787:8787"
+    environment:
+      - JUPYTER_RUNTIME_DIR=/tmp/runtime
+      - JUPYTER_ENABLE_LAB=1}
+    command: "jupyter-lab --no-browser --ip=\"*\" --allow-root --port=8787 --NotebookApp.notebook_dir=/home/jovyan --LabApp.token=\"\" --LabApp.password=\"\" --NotebookApp.default_url=\"/rstudio\""
