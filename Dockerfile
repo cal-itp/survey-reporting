@@ -21,4 +21,7 @@ COPY requirements.txt /tmp/
 RUN pip install -r /tmp/requirements.txt
 
 # Make sure vega-cli are available for altair export
+USER root
+RUN apt-get update && apt-get install -y libcairo2-dev libsdl-pango-dev
+USER $NB_USER
 RUN npm install -g --unsafe --force vega vega-cli vega-lite canvas
