@@ -1,0 +1,108 @@
+---
+title: "knitr-python-demo"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# Knitr demo with python figures
+
+This document shows how to use knitr combined with Python code blocks.
+
+There is some setup to do for this to work. In particular,
+if you are using anaconda/miniconda, the environment *must*
+be locatable by your installation of RStudio.
+In practice, this means that if you are using RStudio for Windows,
+you likely have to install Anaconda/miniconda for Windows, and not use WSL.
+At least, I was unable to get it to find a WSL version.
+
+Once you have a conda environment installed,
+you should indicate to reticulate that you want to use that environment
+in your setup block.
+Reticulate may also try to install a version of miniconda,
+which we don't want to do in the case that it is already installed.
+So a setup block might look like the following:
+
+```{r eval=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+Sys.setenv(RETICULATE_MINICONDA_ENABLED=FALSE)
+reticulate::use_condaenv("knitr")
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+If you are generating matplotlib plots in RStudio desktop,
+either with base matplotlib or with some of its downstream libraries
+(seaborn, cartopy, pandas, geopandas, etc.),
+you *may* see error messages related to Qt.
+This is because RStudio is trying and failing to intercept those images
+and embed them in the `Plots` pane.
+
+You can disable this by changing the matplotlib plotting backend
+to one that will not trigger this somewhat rough-around-the-edges
+RStudio feature:
+```{python}
+import matplotlib
+matplotlib.use('agg')
+```
+For more information on this problem,
+see [this](https://github.com/rstudio/reticulate/issues/586) discussion.
+
+If you are using RStudio Server, this should not be an issue.
+
+## Matplotlib output
+
+RMarkdown/knitr does have *some* ability to capture Python outputs,
+but I found it fairly unreliable when it came to general Python code
+(unsurprisingly, R integration is much better).
+
+A more reliable way forward is to output charts to images,
+then include them using regular markdown image links.
+So we can create a Matplotlib figure with:
+
+```{python}
+import matplotlib.pyplot as plt
+import numpy
+
+x = numpy.linspace(0, 10*numpy.pi, 1000)
+y = numpy.cos(x)
+
+plt.plot(x,y)
+plt.savefig("mpl_fig.png")
+```
+![](mpl_fig.png)
+Note: the most recent version of `reticulate` has a bug that makes
+it not work with the most recent version of Matplotlib.
+You should be able to fix it by ensuring that you have matplotlib==3.2 installed.
+This should be fixed upon the next release of `reticulate`.
+
+## Altair plots
+
+Since altair is so web-oriented, it is probably easiest
+to export to PNG or SVG, as with matplotlib, before embedding.
+
+Exporting altair figures requires `altair_saver`,
+which itself relies on nodejs or selenium to generate output.
+These can be somewhat tricky to install, so if you have trouble,
+you may want to use a Docker image with them pre-installed.
+
+```{python}
+import altair
+import altair_saver
+import pandas
+
+source = pandas.DataFrame({
+    'a': ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'],
+    'b': [28, 55, 43, 91, 81, 53, 19, 87, 52]
+})
+
+chart = altair.Chart(source).mark_bar().encode(
+    x='a',
+    y='b'
+)
+
+altair_saver.save(chart, "alt_chart.png")
+```
+![](alt_chart.png)
