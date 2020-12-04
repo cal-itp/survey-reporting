@@ -1,0 +1,9 @@
+flake8
+intake-dcat
+intake-geopandas
+jupyterlab>=1.0a3
+requests
+aiohttp
+cpi
+linearmodels==4.17
+statsmodels==0.12.0
